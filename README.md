@@ -5,7 +5,7 @@
 [![Release](https://img.shields.io/github/release/fhopfensperger/git-releaser.svg?style=flat-square)](https://github.com//fhopfensperger/git-releaser/releases/latest)
 
 
-Creates new release branches
+This simple command line tool can be used to create release branches with correct versioning, e.g. `release/v1.7.5`. The `-t` flag is used to create a tag in parallel with the branch. Based on the current version of the release branch, the version number of the patch is incremented by one, if the `main` branch is newer than for the latest release. Set the `-n` `--next-flag` flag to release a new PATCH, MINOR or MAJOR version, for example, `-n MINOR` will create a `release/v1.8.0` for `release/v1.7.4`
 
 ## Installation
 

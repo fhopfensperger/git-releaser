@@ -21,6 +21,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/fhopfensperger/git-releaser/pkg/repo"
 	"github.com/rs/zerolog/log"
 
 	"github.com/spf13/cobra"
@@ -32,8 +33,9 @@ var repos []string
 var targetBranch string
 var sourceBranch string
 var fileName string
-var nextMinor bool
 var createTag bool
+var createBranch bool
+var nextVersion int
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
@@ -71,11 +73,14 @@ func init() {
 	pf.StringP("target-branch", "b", "release", "Which target branches to check for version")
 	_ = viper.BindPFlag("target-branch", pf.Lookup("target-branch"))
 
-	pf.BoolP("next-minor-release", "n", false, "Next Version should be a minor release")
-	_ = viper.BindPFlag("next-minor-release", pf.Lookup("next-minor-release"))
-
-	pf.BoolP("create-tag", "t", false, "Create a tag also")
+	pf.BoolP("create-tag", "t", false, "Create a release version tag")
 	_ = viper.BindPFlag("create-tag", pf.Lookup("create-tag"))
+
+	pf.BoolP("create-branch", "c", false, "Create a release version branch")
+	_ = viper.BindPFlag("create-branch", pf.Lookup("create-branch"))
+
+	pf.StringP("next-version", "n", "PATCH", "Which number should be incremented by 1. Possible values: PATCH, MINOR, MAJOR")
+	_ = viper.BindPFlag("next-version", pf.Lookup("next-version"))
 
 	// Cobra also supports local flags, which will only run
 	// when this action is called directly.
@@ -94,8 +99,25 @@ func initConfig() {
 	sourceBranch = viper.GetString("source-branch")
 	fileName = viper.GetString("file")
 	targetBranch = viper.GetString("target-branch")
-	nextMinor = viper.GetBool("next-minor-release")
+	createBranch = viper.GetBool("create-branch")
 	createTag = viper.GetBool("create-tag")
+
+	nv := viper.GetString("next-version")
+
+	switch nv {
+	case "PATCH":
+		log.Info().Msg("New PATCH version will be created")
+		nextVersion = repo.PATCH
+	case "MINOR":
+		log.Info().Msg("New MINOR version will be created")
+		nextVersion = repo.MINOR
+	case "MAJOR":
+		log.Info().Msg("New MAJOR version will be created")
+		nextVersion = repo.MAJOR
+	default:
+		log.Info().Msgf("New MINOR version will be created, as %s is unknown", nv)
+		nextVersion = repo.MINOR
+	}
 
 	if fileName != "" {
 		repos = getReposFromFile(fileName)

@@ -17,16 +17,11 @@ limitations under the License.
 package cmd
 
 import (
-	"fmt"
+	"errors"
 	"os"
-	"regexp"
-	"strconv"
-	"strings"
 
-	"github.com/fhopfensperger/git-releaser/pkg"
-	"github.com/go-git/go-git/v5/plumbing"
+	"github.com/fhopfensperger/git-releaser/pkg/repo"
 	"github.com/rs/zerolog/log"
-	"golang.org/x/mod/semver"
 
 	"github.com/spf13/cobra"
 )
@@ -55,83 +50,31 @@ func init() {
 	rootCmd.AddCommand(createCmd)
 }
 
-func createNewReleaseVersion(repo string) (string, error) {
-	gitService := pkg.RemoteBranch{}
-	branches := gitService.GetAllRemoteBranchesAndTags(repo)
-	latestBranch := getLatestVersion(branches, targetBranch)
-	branchToCopy := getBranchByName(branches, sourceBranch)
-	var newReleaseBranchName string
-	var err error
-	if latestBranch == nil {
-		newReleaseBranchName, err = getNextReleaseVersion("", false)
-		if err != nil {
-			return "", err
-		}
-	} else if latestBranch.Hash() == branchToCopy.Hash() {
-		log.Info().Msgf("Nothing to do, %s and latestBranch %s are equals, commit hash: %s", branchToCopy.Name().Short(), latestBranch.Name().Short(), latestBranch.Hash())
-		return "", nil
-	} else {
-		newReleaseBranchName, err = getNextReleaseVersion(latestBranch.Name().Short(), nextMinor)
-		if err != nil {
-			return "", err
-		}
+func createNewReleaseVersion(repoUrl string) (string, error) {
+	r := repo.New(repoUrl)
+	if r == nil {
+		return "", errors.New("could not get repo")
 	}
-	fullNewReleaseBranchName := fmt.Sprintf("refs/heads/%s/%s", targetBranch, newReleaseBranchName)
-	newReleaseBranchRef := plumbing.NewReferenceFromStrings(fullNewReleaseBranchName, fullNewReleaseBranchName)
-	err = gitService.CreateBranch(branchToCopy, newReleaseBranchRef, createTag)
+
+	if ref := r.GetSourceBranch(sourceBranch); ref == nil {
+		return "", errors.New("could not get source branch")
+	}
+	if createBranch {
+		r.GetVersionBranches(targetBranch)
+	}
+
+	if createTag {
+		r.GetVersionTags()
+	}
+
+	r.GetLatestVersionReference()
+
+	_, err := r.NextReleaseVersion(nextVersion)
 	if err != nil {
 		return "", err
 	}
-	return newReleaseBranchName, nil
-}
-
-func getLatestVersion(refs []*plumbing.Reference, branchFilter string) *plumbing.Reference {
-	if branchFilter == "" {
-		log.Warn().Msg("No branchfilter defined")
-		os.Exit(1)
-	}
-
-	for i := len(refs) - 1; i >= 0; i-- {
-		if pkg.VersionRegex.FindString(refs[i].Name().Short()) != "" && strings.Contains(refs[1].Name().Short(), branchFilter) {
-			return refs[i]
-		}
-	}
-	return nil
-}
-
-func getBranchByName(refs []*plumbing.Reference, branchName string) *plumbing.Reference {
-	for _, ref := range refs {
-		if ref.Name().Short() == branchName {
-			return ref
-		}
-	}
-	return nil
-}
-
-func getNextReleaseVersion(latestVersion string, nextMinor bool) (string, error) {
-	if latestVersion == "" {
-		return "v1.0.0", nil
-	}
-	semLatestVersion := semver.Canonical(pkg.VersionRegex.FindString(latestVersion))
-	latestVersionSlice := strings.Split(semLatestVersion, ".")
-
-	var versionNumber = regexp.MustCompile(`\d`)
-
-	major, err := strconv.Atoi(versionNumber.FindString(latestVersionSlice[len(latestVersionSlice)-3]))
-	if err != nil {
+	if err := r.CreateNewRelease(createBranch, createTag); err != nil {
 		return "", err
 	}
-	minor, err := strconv.Atoi(latestVersionSlice[len(latestVersionSlice)-2])
-	if err != nil {
-		return "", err
-	}
-	patch, err := strconv.Atoi(latestVersionSlice[len(latestVersionSlice)-1])
-	if err != nil {
-		return "", err
-	}
-	if nextMinor {
-		return semver.Canonical(fmt.Sprintf("v%v.%v.%v", major, minor+1, 0)), nil
-	} else {
-		return semver.Canonical(fmt.Sprintf("v%v.%v.%v", major, minor, patch+1)), nil
-	}
+	return repoUrl, nil
 }

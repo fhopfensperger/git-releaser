@@ -2,14 +2,11 @@ package remote
 
 import (
 	"fmt"
-	"os"
 	"regexp"
 	"sort"
-	"time"
 
 	"github.com/go-git/go-git/v5/plumbing"
 	"github.com/go-git/go-git/v5/plumbing/object"
-	"github.com/go-git/go-git/v5/plumbing/storer"
 	"github.com/go-git/go-git/v5/storage"
 
 	"golang.org/x/mod/semver"
@@ -31,29 +28,13 @@ type CreateBranchAndTager interface {
 	GetStorer() storage.Storer
 }
 
-// GitRepoer
-type GitRepoer interface {
-	Push(*git.PushOptions) error
-	Tags() (storer.ReferenceIter, error)
-	CreateTag(string, plumbing.Hash, *git.CreateTagOptions) (*plumbing.Reference, error)
-}
-
 type GitRemoter interface {
 	List(o *git.ListOptions) (rfs []*plumbing.Reference, err error)
+	Push(o *git.PushOptions) error
 }
 type GitRepo struct {
-	repo   GitRepoer
 	remote GitRemoter
 	storer storage.Storer
-}
-
-//AddRepo to add a remote repo to RemoteBranch struct
-func (m *GitRepo) AddRepo(repo GitRepoer) {
-	m.repo = repo
-}
-
-func (m *GitRepo) GetRepo() GitRepoer {
-	return m.repo
 }
 
 func (m *GitRepo) GetStorer() storage.Storer {
@@ -62,10 +43,11 @@ func (m *GitRepo) GetStorer() storage.Storer {
 
 //GetRemoteBranches get remote branches from GitHub using the repoURL
 func (m *GitRepo) GetAllRemoteBranchesAndTags(repoURL string) []*plumbing.Reference {
+	var stor *memory.Storage
 	if m.storer == nil {
-		m.storer = memory.NewStorage()
+		stor = memory.NewStorage()
+		m.storer = stor
 	}
-
 	if m.remote == nil {
 		rem := git.NewRemote(m.storer, &config.RemoteConfig{
 			Name: "origin",
@@ -74,48 +56,51 @@ func (m *GitRepo) GetAllRemoteBranchesAndTags(repoURL string) []*plumbing.Refere
 		m.remote = rem
 	}
 
-	if m.repo == nil {
-		r, err := git.Clone(m.storer, nil, &git.CloneOptions{
-			URL: repoURL,
-		})
-		if err != nil {
-			log.Err(err).Msg("")
-			os.Exit(1)
-		}
-		m.repo = r
-	}
-
-	var refs []*plumbing.Reference
-	references, err := m.remote.List(&git.ListOptions{})
-	if err != nil {
-		return nil
-	}
-	for _, ref := range references {
-		if ref.Name().IsBranch() {
-			refs = append(refs, ref)
-		}
-	}
-
-	tagIter, err := m.repo.Tags()
+	// We can then use every Remote functions to retrieve wanted information
+	refs, err := m.remote.List(&git.ListOptions{})
 	if err != nil {
 		log.Err(err).Msg("")
 	}
 
-	err = tagIter.ForEach(func(r *plumbing.Reference) error {
-		refs = append(refs, r)
-		return nil
-	})
-	if err != nil {
-		return nil
-	}
+	// Filters the references list and only keeps tags
+	var branches []*plumbing.Reference
+	var tags []*plumbing.Reference
 
-	sortBySemVer(refs)
-	log.Info().Msgf("Remote branches and tags found: %v for repo %s", refs, repoURL)
-	return refs
+	for _, ref := range refs {
+		eo := m.storer.NewEncodedObject()
+		err := m.storer.SetReference(ref)
+		if err != nil {
+			log.Err(err).Msg("")
+			continue
+		}
+		if ref.Name().IsTag() {
+			tag := object.Tag{Name: ref.Name().String(), Hash: ref.Hash()}
+			err := tag.EncodeWithoutSignature(eo)
+			if err != nil {
+				log.Err(err).Msg("")
+				continue
+			}
+			stor.Objects[ref.Hash()] = eo
+			tags = append(tags, ref)
+		} else if ref.Name().IsBranch() {
+			commit := object.Commit{Hash: ref.Hash()}
+			err := commit.EncodeWithoutSignature(eo)
+			if err != nil {
+				log.Err(err).Msg("")
+				continue
+			}
+			stor.Objects[ref.Hash()] = eo
+			branches = append(branches, ref)
+		}
+	}
+	branchesAndTags := append(tags, branches...)
+	sortBySemVer(branchesAndTags)
+	log.Info().Msgf("Remote branches and tags found: %v for repo %s", branchesAndTags, repoURL)
+
+	return branchesAndTags
 }
 
 func (m *GitRepo) CreateBranchAndTag(sourceBranch *plumbing.Reference, targetBranch, version string, createBranch, createTag bool) error {
-
 	if createBranch {
 		// Create new branch
 		var branchName string
@@ -128,25 +113,28 @@ func (m *GitRepo) CreateBranchAndTag(sourceBranch *plumbing.Reference, targetBra
 		// The created reference is saved in the storage.
 		err := m.storer.SetReference(ref)
 		if err != nil {
+			log.Err(err).Msg("")
 			return err
 		}
-		err = m.repo.Push(&git.PushOptions{})
+		refspec := fmt.Sprintf("refs/heads/%s:refs/heads/%s", branchName, branchName)
+		err = m.remote.Push(&git.PushOptions{RefSpecs: []config.RefSpec{config.RefSpec(refspec)}})
 		if err != nil {
+			log.Err(err).Msg("")
 			return err
 		}
 		log.Info().Msgf("Successfully created branch %s/%s", targetBranch, version)
 	}
 
 	if createTag {
-		_, err := m.repo.CreateTag(version, sourceBranch.Hash(), &git.CreateTagOptions{
-			Message: version,
-			Tagger:  &object.Signature{When: time.Now()},
-		})
+		ref := plumbing.NewHashReference(plumbing.NewTagReferenceName(version), sourceBranch.Hash())
+		err := m.storer.SetReference(ref)
 		if err != nil {
+			log.Err(err).Msg("")
 			return err
 		}
-		err = m.repo.Push(&git.PushOptions{RefSpecs: []config.RefSpec{config.RefSpec("refs/tags/*:refs/tags/*")}})
+		err = m.remote.Push(&git.PushOptions{RefSpecs: []config.RefSpec{config.RefSpec("refs/tags/*:refs/tags/*")}})
 		if err != nil {
+			log.Err(err).Msg("")
 			return err
 		}
 		log.Info().Msgf("Successfully created tag: %s", version)

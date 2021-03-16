@@ -68,23 +68,21 @@ func (m *GitRepo) GetAllRemoteBranchesAndTags(repoURL string) []*plumbing.Refere
 
 	for _, ref := range refs {
 		eo := m.storer.NewEncodedObject()
-		err := m.storer.SetReference(ref)
-		if err != nil {
-			log.Err(err).Msg("")
-			continue
-		}
 		if ref.Name().IsTag() {
-			tag := object.Tag{Name: ref.Name().String(), Hash: ref.Hash()}
-			err := tag.EncodeWithoutSignature(eo)
+			err := m.storer.SetReference(ref)
 			if err != nil {
 				log.Err(err).Msg("")
 				continue
 			}
-			stor.Objects[ref.Hash()] = eo
 			tags = append(tags, ref)
 		} else if ref.Name().IsBranch() {
+			err := m.storer.SetReference(ref)
+			if err != nil {
+				log.Err(err).Msg("")
+				continue
+			}
 			commit := object.Commit{Hash: ref.Hash()}
-			err := commit.EncodeWithoutSignature(eo)
+			err = commit.EncodeWithoutSignature(eo)
 			if err != nil {
 				log.Err(err).Msg("")
 				continue
@@ -132,7 +130,8 @@ func (m *GitRepo) CreateBranchAndTag(sourceBranch *plumbing.Reference, targetBra
 			log.Err(err).Msg("")
 			return err
 		}
-		err = m.remote.Push(&git.PushOptions{RefSpecs: []config.RefSpec{config.RefSpec("refs/tags/*:refs/tags/*")}})
+		refspecs := fmt.Sprintf("refs/tags/%s:refs/tags/%s", version, version)
+		err = m.remote.Push(&git.PushOptions{RefSpecs: []config.RefSpec{config.RefSpec(refspecs)}})
 		if err != nil {
 			log.Err(err).Msg("")
 			return err

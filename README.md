@@ -1,7 +1,6 @@
 # git-releaser
 ![Go](https://github.com/fhopfensperger/git-releaser/workflows/Go/badge.svg)
 [![Go Report Card](https://goreportcard.com/badge/github.com/fhopfensperger/git-releaser)](https://goreportcard.com/report/github.com/fhopfensperger/git-releaser)
-[![Coverage Status](https://coveralls.io/repos/github/fhopfensperger/git-releaser/badge.svg?branch=main)](https://coveralls.io/github/fhopfensperger/git-releaser?branch=main)
 [![Release](https://img.shields.io/github/release/fhopfensperger/git-releaser.svg?style=flat-square)](https://github.com//fhopfensperger/git-releaser/releases/latest)
 
 

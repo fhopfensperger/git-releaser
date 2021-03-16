@@ -18,7 +18,6 @@ package cmd
 
 import (
 	"bufio"
-	"fmt"
 	"os"
 
 	"github.com/fhopfensperger/git-releaser/pkg/repo"
@@ -123,7 +122,7 @@ func initConfig() {
 		repos = getReposFromFile(fileName)
 	}
 	if len(repos) == 0 && fileName == "" {
-		fmt.Println("Either -f (file) or -r (repos) must be set")
+		log.Err(nil).Msg("Either -f (file) or -r (repos) must be set")
 		os.Exit(1)
 	}
 }

@@ -6,8 +6,6 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/go-git/go-git/v5/plumbing/object"
-
 	"github.com/fhopfensperger/git-releaser/pkg/remote"
 	"github.com/go-git/go-git/v5/plumbing"
 	"github.com/rs/zerolog/log"
@@ -151,15 +149,7 @@ func (r *Repo) CreateNewRelease(branch, tag bool) error {
 	}
 
 	if r.latestVersionReference.Name().IsTag() {
-		tag, err := object.GetTag(r.remoteBranch.GetStorer(), r.latestVersionReference.Hash())
-		if err != nil {
-			return err
-		}
-		commit, err := tag.Commit()
-		if err != nil {
-			return err
-		}
-		if commit.Hash.String() == r.sourceBranch.Hash().String() {
+		if r.latestVersionReference.Hash().String() == r.sourceBranch.Hash().String() {
 			log.Info().Msgf("Nothing to do, %s branch and latest tag version %s are equals, commit hash: %s", r.sourceBranch.Name().Short(), r.latestVersionReference.Name().Short(), r.sourceBranch.Hash())
 			return nil
 		}

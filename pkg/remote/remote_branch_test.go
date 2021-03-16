@@ -5,7 +5,6 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/go-git/go-git/v5/plumbing/storer"
 	"github.com/go-git/go-git/v5/storage/memory"
 	"github.com/stretchr/testify/assert"
 
@@ -21,17 +20,6 @@ type gitRepoMock struct {
 func (m *gitRepoMock) Push(options *git.PushOptions) error {
 	fmt.Println("Mocked Push() function")
 	return nil
-}
-
-func (m *gitRepoMock) Tags() (storer.ReferenceIter, error) {
-	fmt.Println("Mocked Tags() function")
-	args := m.Called()
-	return args.Get(0).(storer.ReferenceIter), args.Error(1)
-}
-
-func (m *gitRepoMock) CreateTag(string, plumbing.Hash, *git.CreateTagOptions) (*plumbing.Reference, error) {
-	fmt.Println("Mocked CreateTag() function")
-	return nil, nil
 }
 
 func (m *gitRepoMock) List(o *git.ListOptions) (rfs []*plumbing.Reference, err error) {
@@ -65,16 +53,15 @@ func generateTagsPlumbReferences() []*plumbing.Reference {
 func TestGitRepo_GetAllRemoteBranchesAndTags(t *testing.T) {
 	gitRemoteRepo := new(gitRepoMock)
 
-	gitRepo := GitRepo{repo: gitRemoteRepo, remote: gitRemoteRepo}
+	gitRepo := GitRepo{remote: gitRemoteRepo}
 
-	gitRemoteRepo.On("Tags").Return(storer.NewReferenceSliceIter(generateTagsPlumbReferences()), nil)
 	gitRemoteRepo.On("List", &git.ListOptions{}).Return(append(generateTagsPlumbReferences(), generateBranchPlumbReferences()...), nil)
 
 	refs := gitRepo.GetAllRemoteBranchesAndTags("https://github.com/just-a-repo-name")
 	gitRemoteRepo.AssertExpectations(t)
 
 	sortedRefs := []*plumbing.Reference{
-		main, dev, test, a, b, c, e, f, d, g,
+		main, dev, test, a, b, e, c, f, g, d,
 	}
 
 	assert.Equal(t, refs, sortedRefs)
@@ -83,9 +70,8 @@ func TestGitRepo_GetAllRemoteBranchesAndTags(t *testing.T) {
 func TestGitRepo_GetAllRemoteBranchesAndTags_TagsOnly(t *testing.T) {
 	gitRemoteRepo := new(gitRepoMock)
 
-	gitRepo := GitRepo{repo: gitRemoteRepo, remote: gitRemoteRepo}
+	gitRepo := GitRepo{remote: gitRemoteRepo}
 
-	gitRemoteRepo.On("Tags").Return(storer.NewReferenceSliceIter(generateTagsPlumbReferences()), nil)
 	gitRemoteRepo.On("List", &git.ListOptions{}).Return(append(generateTagsPlumbReferences(), main, test, dev), nil)
 
 	refs := gitRepo.GetAllRemoteBranchesAndTags("https://github.com/just-a-repo-name")
@@ -101,9 +87,8 @@ func TestGitRepo_GetAllRemoteBranchesAndTags_TagsOnly(t *testing.T) {
 func TestGitRepo_GetAllRemoteBranchesAndTags_BranchesOnly(t *testing.T) {
 	gitRemoteRepo := new(gitRepoMock)
 
-	gitRepo := GitRepo{repo: gitRemoteRepo, remote: gitRemoteRepo}
+	gitRepo := GitRepo{remote: gitRemoteRepo}
 
-	gitRemoteRepo.On("Tags").Return(storer.NewReferenceSliceIter(generateTagsPlumbReferences()), nil)
 	gitRemoteRepo.On("List", &git.ListOptions{}).Return(append(generateTagsPlumbReferences(), main, test, dev), nil)
 
 	refs := gitRepo.GetAllRemoteBranchesAndTags("https://github.com/just-a-repo-name")
@@ -118,7 +103,7 @@ func TestGitRepo_GetAllRemoteBranchesAndTags_BranchesOnly(t *testing.T) {
 
 func TestGitRepo_CreateBranchAndTag(t *testing.T) {
 	gitRemoteRepo := new(gitRepoMock)
-	m := GitRepo{repo: gitRemoteRepo, remote: gitRemoteRepo, storer: memory.NewStorage()}
+	m := GitRepo{remote: gitRemoteRepo, storer: memory.NewStorage()}
 
 	gitRemoteRepo.On("Push", &git.PushOptions{}).Return(nil)
 
@@ -189,19 +174,6 @@ func Test_sortBySemVer(t *testing.T) {
 func TestGitRepo_GetStorer(t *testing.T) {
 	gitRemoteRepo := new(gitRepoMock)
 	stor := memory.NewStorage()
-	m := GitRepo{repo: gitRemoteRepo, remote: gitRemoteRepo, storer: stor}
+	m := GitRepo{remote: gitRemoteRepo, storer: stor}
 	assert.Equal(t, stor, m.GetStorer())
-}
-
-func TestGitRepo_GetRepo(t *testing.T) {
-	gitRemoteRepo := new(gitRepoMock)
-	m := GitRepo{repo: gitRemoteRepo, remote: gitRemoteRepo}
-	assert.Equal(t, gitRemoteRepo, m.GetRepo())
-}
-
-func TestGitRepo_AddRepo(t *testing.T) {
-	gitRemoteRepo := new(gitRepoMock)
-	m := GitRepo{repo: gitRemoteRepo, remote: gitRemoteRepo}
-	m.AddRepo(gitRemoteRepo)
-	assert.Equal(t, gitRemoteRepo, m.repo)
 }

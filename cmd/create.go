@@ -18,7 +18,6 @@ package cmd
 
 import (
 	"errors"
-	"os"
 
 	"github.com/fhopfensperger/git-releaser/pkg/repo"
 	"github.com/rs/zerolog/log"
@@ -36,7 +35,6 @@ var createCmd = &cobra.Command{
 			branchName, err := createNewReleaseVersion(r)
 			if err != nil {
 				log.Err(err).Msgf("For %s", r)
-				os.Exit(1)
 			}
 			if branchName != "" {
 				log.Info().Msgf("Successfully completed %s", r)

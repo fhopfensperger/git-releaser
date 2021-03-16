@@ -438,6 +438,7 @@ func TestRepo_CreateNewRelease(t *testing.T) {
 	mainCommit1 := plumbing.NewHashReference(plumbing.NewBranchReferenceName("main"), plumbing.NewHash(hash.String()))
 	commit1 := object.Commit{Hash: hash}
 	tag1 := object.Tag{Name: tag_v2_0_0.Name().String(), Hash: tag_v2_0_0.Hash(), TargetType: plumbing.CommitObject, Target: hash}
+	remoteBranchMock.On("CreateBranchAndTag", mainCommit1, "release", "v2.0.1", true, true).Return(nil)
 
 	co1 := stor.NewEncodedObject()
 	commit1.EncodeWithoutSignature(co1)

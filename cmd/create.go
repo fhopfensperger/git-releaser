@@ -28,8 +28,8 @@ import (
 // createCmd represents the branch command
 var createCmd = &cobra.Command{
 	Use:   "create",
-	Short: "Get remote create",
-	Long:  `Get remote create`,
+	Short: "Creates a tag or version",
+	Long:  `Creates a tag or version`,
 	Run: func(cmd *cobra.Command, args []string) {
 		for _, r := range repos {
 			branchName, err := createNewReleaseVersion(r)

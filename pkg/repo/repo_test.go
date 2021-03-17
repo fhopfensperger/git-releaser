@@ -357,14 +357,14 @@ func TestRepo_NextReleaseVersion(t *testing.T) {
 		{
 			name:    "default, as no latest version found",
 			args:    args{PATCH},
-			want:    "v1.0.0",
+			want:    "v0.0.1",
 			wantErr: false,
 		},
 		{
 			name:    "invalid version branch reference",
 			fields:  fields{plumbing.NewHashReference("vmain.main.main", plumbing.Hash{})},
-			args:    args{PATCH},
-			want:    "v1.0.0",
+			args:    args{MINOR},
+			want:    "v0.1.0",
 			wantErr: false,
 		},
 	}
@@ -619,6 +619,45 @@ func TestRepo_CreateNewRelease(t *testing.T) {
 			}
 			if err := r.CreateNewRelease(tt.args.branch, tt.args.tag); (err != nil) != tt.wantErr {
 				t.Errorf("CreateNewRelease() error = %v, wantErr %v", err, tt.wantErr)
+			}
+		})
+	}
+}
+
+func Test_fallBackVersion(t *testing.T) {
+	type args struct {
+		nextVersion int
+	}
+	tests := []struct {
+		name string
+		args args
+		want string
+	}{
+		{
+			name: "Initial Major version",
+			args: args{MAJOR},
+			want: "v1.0.0",
+		},
+		{
+			name: "Initial Minor version",
+			args: args{MINOR},
+			want: "v0.1.0",
+		},
+		{
+			name: "Initial Patch version",
+			args: args{PATCH},
+			want: "v0.0.1",
+		},
+		{
+			name: "Initial default version",
+			args: args{123},
+			want: "v0.1.0",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := fallBackVersion(tt.args.nextVersion); got != tt.want {
+				t.Errorf("fallBackVersion() = %v, want %v", got, tt.want)
 			}
 		})
 	}

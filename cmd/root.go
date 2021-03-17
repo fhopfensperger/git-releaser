@@ -39,8 +39,10 @@ var nextVersion int
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
 	Use:   "git-releaser",
-	Short: "Simple command line utility to create a new release branch",
-	Long:  `Simple command line utility to create a new release branch`,
+	Short: "Simple command line utility to create a new release branch or tag based on semver",
+	Long: `Simple command line utility to create a new release branch or tag based on semver. 
+More information can be found here: https://github.com/fhopfensperger/git-releaser
+Author: Florian Hopfensperger <f.hopfensperger@gmail.com>`,
 }
 
 // Execute adds all child commands to the root command and sets flags appropriately.
@@ -65,7 +67,7 @@ func init() {
 	pf.StringSliceP("repos", "r", []string{}, "Git Repo urls e.g. git@github.com:fhopfensperger/my-repo.git")
 	_ = viper.BindPFlag("repos", pf.Lookup("repos"))
 
-	pf.StringP("source-branch", "s", "", "Which branch should be used to create release branch & tag")
+	pf.StringP("source-branch", "s", "main", "Source reference branch")
 	_ = viper.BindPFlag("source-branch", pf.Lookup("source-branch"))
 	_ = cobra.MarkFlagRequired(pf, "source-branch")
 
@@ -83,7 +85,7 @@ func init() {
 
 	// Cobra also supports local flags, which will only run
 	// when this action is called directly.
-	pf.StringP("file", "f", "", "Uses repos from file (one repo per line)")
+	pf.StringP("file", "f", "", "Use repos from file (one repo per line, line with a leading # will be ignored)")
 	_ = viper.BindPFlag("file", pf.Lookup("file"))
 	//rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 	rootCmd.SetVersionTemplate(`{{printf "v%s\n" .Version}}`)

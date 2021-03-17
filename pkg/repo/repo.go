@@ -101,18 +101,17 @@ func (r *Repo) GetSourceBranch(name string) *plumbing.Reference {
 }
 
 func (r *Repo) NextReleaseVersion(nextVersion int) (string, error) {
-	fallBack := "v1.0.0"
 	if r.latestVersionReference == nil {
-		r.nextReleaseVersion = fallBack
-		return fallBack, nil
+		r.nextReleaseVersion = fallBackVersion(nextVersion)
+		return r.nextReleaseVersion, nil
 	}
 
 	semLatestVersion := semver.Canonical(remote.VersionRegex.FindString(r.latestVersionReference.Name().Short()))
 	latestVersionSlice := strings.Split(semLatestVersion, ".")
 
 	if len(latestVersionSlice) == 1 {
-		r.nextReleaseVersion = fallBack
-		return fallBack, nil
+		r.nextReleaseVersion = fallBackVersion(nextVersion)
+		return r.nextReleaseVersion, nil
 	}
 
 	var versionNumber = regexp.MustCompile(`\d`)
@@ -137,9 +136,22 @@ func (r *Repo) NextReleaseVersion(nextVersion int) (string, error) {
 	case PATCH:
 		r.nextReleaseVersion = semver.Canonical(fmt.Sprintf("v%v.%v.%v", major, minor, patch+1))
 	default:
-		r.nextReleaseVersion = fallBack
+		r.nextReleaseVersion = fallBackVersion(nextVersion)
 	}
 	return r.nextReleaseVersion, nil
+}
+
+func fallBackVersion(nextVersion int) string {
+	switch nextVersion {
+	case MAJOR:
+		return semver.Canonical(fmt.Sprintf("v%v.%v.%v", 1, 0, 0))
+	case MINOR:
+		return semver.Canonical(fmt.Sprintf("v%v.%v.%v", 0, 1, 0))
+	case PATCH:
+		return semver.Canonical(fmt.Sprintf("v%v.%v.%v", 0, 0, 1))
+	default:
+		return semver.Canonical(fmt.Sprintf("v%v.%v.%v", 0, 1, 0))
+	}
 }
 
 func (r *Repo) CreateNewRelease(branch, tag bool) error {

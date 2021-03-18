@@ -99,3 +99,20 @@ func TestExecute(t *testing.T) {
 	out, _ := ioutil.ReadAll(b)
 	assert.Equal(t, "v0.0.0\n", string(out))
 }
+
+func TestExecute_repos_from_args(t *testing.T) {
+	cmd := rootCmd
+	testRepos := []string{"git@github.com:fhopfensperger/git-releaser.git"}
+	cmd.SetArgs([]string{"create", "-s", "main", "release", "-r", testRepos[0]})
+	Execute("0.0.0")
+
+	assert.Equal(t, repos, testRepos)
+	assert.Equal(t, targetBranch, "release")
+}
+
+func TestExecute_repos_from_args_not_existing(t *testing.T) {
+	cmd := rootCmd
+	testRepos := []string{"git@github.com:fhopfensperger/i-dont-exist.git"}
+	cmd.SetArgs([]string{"create", "-s", "main", "release", "-r", testRepos[0]})
+	Execute("0.0.0")
+}

@@ -1,6 +1,7 @@
 # git-releaser
 ![Go](https://github.com/fhopfensperger/git-releaser/workflows/Go/badge.svg)
 [![Go Report Card](https://goreportcard.com/badge/github.com/fhopfensperger/git-releaser)](https://goreportcard.com/report/github.com/fhopfensperger/git-releaser)
+[![Coverage Status](https://coveralls.io/repos/github/fhopfensperger/git-releaser/badge.svg?branch=main)](https://coveralls.io/github/fhopfensperger/git-releaser?branch=main)
 [![Release](https://img.shields.io/github/release/fhopfensperger/git-releaser.svg?style=flat-square)](https://github.com//fhopfensperger/git-releaser/releases/latest)
 
 This simple command line tool can be used to create a `release branch` and/ or a `tag` with [semantic versioning](https://semver.org) e.g. branch: `release/v1.7.5` and/or tag: `v1.7.5`.

@@ -34,7 +34,7 @@ Note: All flags can be set using environment variables, for example:
 ```bash
 export REPOS=git@github.com:fhopfensperger/my-repo.git
 export NEXTVERSION=MAJOR
-export PATH=1234567890abcdef
+export PAT=1234567890abcdef
 ...
 ```
 
@@ -129,15 +129,15 @@ $ git-releaser create -f repos1.txt -s main -n PATCH -c
 ```
 ---
 
-## Installation
+# Installation
 
-### Option 1 (script)
+## Option 1 (script)
 
 ```bash
 curl https://raw.githubusercontent.com/fhopfensperger/git-releaser/main/get.sh | bash
 ```
 
-### Option 2 (manually)
+## Option 2 (manually)
 
 Go to [Releases](https://github.com/fhopfensperger/git-releaser/releases) download the latest release according to your processor architecture and operating system, and unarchive it.
 

@@ -1,6 +1,8 @@
 package cmd
 
-import "testing"
+import (
+	"testing"
+)
 
 func Test_createNewReleaseVersion(t *testing.T) {
 
@@ -14,10 +16,10 @@ func Test_createNewReleaseVersion(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			name:    "Test repo",
+			name:    "auth required",
 			args:    args{"https://github.com/fhopfensperger/amqp-sb-client.git"},
-			want:    "https://github.com/fhopfensperger/amqp-sb-client.git",
-			wantErr: false,
+			want:    "",
+			wantErr: true,
 		},
 		{
 			name:    "Test repo doesnt exists",

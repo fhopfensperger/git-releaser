@@ -6,6 +6,8 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/go-git/go-git/v5/plumbing/transport"
+
 	"github.com/fhopfensperger/git-releaser/pkg/remote"
 	"github.com/go-git/go-git/v5/plumbing"
 	"github.com/rs/zerolog/log"
@@ -33,10 +35,10 @@ type Repo struct {
 	branchFilter           string
 }
 
-func New(remoteUrl string) *Repo {
+func New(remoteUrl string, auth transport.AuthMethod) *Repo {
 	r := Repo{}
 	r.remoteUrl = remoteUrl
-	r.remoteBranch = &remote.GitRepo{}
+	r.remoteBranch = &remote.GitRepo{Auth: auth}
 	r.allReferences = r.remoteBranch.GetAllRemoteBranchesAndTags(remoteUrl)
 	return &r
 }

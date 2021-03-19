@@ -69,7 +69,6 @@ func init() {
 
 	pf.StringP("source-branch", "s", "main", "Source reference branch")
 	_ = viper.BindPFlag("source-branch", pf.Lookup("source-branch"))
-	_ = cobra.MarkFlagRequired(pf, "source-branch")
 
 	pf.StringP("target-branch", "b", "release", "Which target branches to check for version")
 	_ = viper.BindPFlag("target-branch", pf.Lookup("target-branch"))

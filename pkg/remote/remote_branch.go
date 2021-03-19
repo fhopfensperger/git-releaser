@@ -134,7 +134,7 @@ func (m *GitRepo) CreateBranchAndTag(sourceBranch *plumbing.Reference, targetBra
 			return err
 		}
 		refspecs := fmt.Sprintf("refs/tags/%s:refs/tags/%s", version, version)
-		err = m.remote.Push(&git.PushOptions{RefSpecs: []config.RefSpec{config.RefSpec(refspecs)}})
+		err = m.remote.Push(&git.PushOptions{RefSpecs: []config.RefSpec{config.RefSpec(refspecs)}, Auth: m.Auth})
 		if err != nil {
 			log.Err(err).Msg("")
 			return err

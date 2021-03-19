@@ -67,20 +67,20 @@ func init() {
 	pf.StringSliceP("repos", "r", []string{}, "Git Repo urls e.g. git@github.com:fhopfensperger/my-repo.git")
 	_ = viper.BindPFlag("repos", pf.Lookup("repos"))
 
-	pf.StringP("source-branch", "s", "main", "Source reference branch")
-	_ = viper.BindPFlag("source-branch", pf.Lookup("source-branch"))
+	pf.StringP("source", "s", "main", "Source reference branch")
+	_ = viper.BindPFlag("source", pf.Lookup("source"))
 
-	pf.StringP("target-branch", "b", "release", "Which target branches to check for version")
-	_ = viper.BindPFlag("target-branch", pf.Lookup("target-branch"))
+	pf.StringP("target", "b", "release", "Which target branches to check for version")
+	_ = viper.BindPFlag("target", pf.Lookup("target"))
 
-	pf.BoolP("create-tag", "t", false, "Create a release version tag")
-	_ = viper.BindPFlag("create-tag", pf.Lookup("create-tag"))
+	pf.BoolP("tag", "t", false, "Create a release version tag")
+	_ = viper.BindPFlag("tag", pf.Lookup("tag"))
 
-	pf.BoolP("create-branch", "c", false, "Create a release version branch")
-	_ = viper.BindPFlag("create-branch", pf.Lookup("create-branch"))
+	pf.BoolP("branch", "c", false, "Create a release version branch")
+	_ = viper.BindPFlag("branch", pf.Lookup("branch"))
 
-	pf.StringP("next-version", "n", "PATCH", "Which number should be incremented by 1. Possible values: PATCH, MINOR, MAJOR")
-	_ = viper.BindPFlag("next-version", pf.Lookup("next-version"))
+	pf.StringP("nextversion", "n", "PATCH", "Which number should be incremented by 1. Possible values: PATCH, MINOR, MAJOR")
+	_ = viper.BindPFlag("nextversion", pf.Lookup("nextversion"))
 
 	// Cobra also supports local flags, which will only run
 	// when this action is called directly.
@@ -92,17 +92,16 @@ func init() {
 
 // initConfig reads in config file and ENV variables if set.
 func initConfig() {
-
 	viper.AutomaticEnv() // read in environment variables that match
 
 	repos = viper.GetStringSlice("repos")
-	sourceBranch = viper.GetString("source-branch")
+	sourceBranch = viper.GetString("source")
 	fileName = viper.GetString("file")
-	targetBranch = viper.GetString("target-branch")
-	createBranch = viper.GetBool("create-branch")
-	createTag = viper.GetBool("create-tag")
+	targetBranch = viper.GetString("target")
+	createBranch = viper.GetBool("branch")
+	createTag = viper.GetBool("tag")
 
-	nv := viper.GetString("next-version")
+	nv := viper.GetString("nextversion")
 
 	switch nv {
 	case "PATCH":

@@ -58,7 +58,7 @@ func Test_initConfig(t *testing.T) {
 }
 func Test_initConfig_major(t *testing.T) {
 	os.Setenv("REPOS", "repos123")
-	os.Setenv("NEXT-VERSION", "MAJOR")
+	os.Setenv("NEXTVERSION", "MAJOR")
 
 	initConfig()
 
@@ -66,7 +66,7 @@ func Test_initConfig_major(t *testing.T) {
 }
 func Test_initConfig_minor(t *testing.T) {
 	os.Setenv("REPOS", "repos123")
-	os.Setenv("NEXT-VERSION", "MINOR")
+	os.Setenv("NEXTVERSION", "MINOR")
 
 	initConfig()
 
@@ -74,7 +74,7 @@ func Test_initConfig_minor(t *testing.T) {
 }
 func Test_initConfig_patch(t *testing.T) {
 	os.Setenv("REPOS", "repos123")
-	os.Setenv("NEXT-VERSION", "PATCH")
+	os.Setenv("NEXTVERSION", "PATCH")
 
 	initConfig()
 
@@ -83,7 +83,7 @@ func Test_initConfig_patch(t *testing.T) {
 
 func Test_initConfig_default(t *testing.T) {
 	os.Setenv("REPOS", "repos123")
-	os.Setenv("NEXT-VERSION", "DEFAULT")
+	os.Setenv("NEXTVERSION", "DEFAULT")
 
 	initConfig()
 

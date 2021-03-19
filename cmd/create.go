@@ -18,6 +18,11 @@ package cmd
 
 import (
 	"errors"
+	"strings"
+
+	"github.com/go-git/go-git/v5/plumbing/transport/http"
+
+	"github.com/spf13/viper"
 
 	"github.com/fhopfensperger/git-releaser/pkg/repo"
 	"github.com/rs/zerolog/log"
@@ -25,12 +30,16 @@ import (
 	"github.com/spf13/cobra"
 )
 
+var pat string
+
 // createCmd represents the branch command
 var createCmd = &cobra.Command{
 	Use:   "create",
 	Short: "Creates a tag or version",
 	Long:  `Creates a tag or version`,
 	Run: func(cmd *cobra.Command, args []string) {
+		pat = viper.GetString("pat")
+
 		for _, r := range repos {
 			branchName, err := createNewReleaseVersion(r)
 			if err != nil {
@@ -45,11 +54,21 @@ var createCmd = &cobra.Command{
 }
 
 func init() {
+	flags := createCmd.Flags()
+	flags.StringP("pat", "p", "", `Use a Git Personal Access Token instead of the default private certificate! You could also set a environment variable. "export PAT=123456789" `)
+	_ = viper.BindPFlag("pat", flags.Lookup("pat"))
 	rootCmd.AddCommand(createCmd)
 }
 
 func createNewReleaseVersion(repoUrl string) (string, error) {
-	r := repo.New(repoUrl)
+	if strings.Contains(repoUrl, "https://") {
+		log.Info().Msgf(`Using PAT "-p" instead of ssh private certificate for repo %s`, repoUrl)
+	}
+
+	r := repo.New(repoUrl, &http.BasicAuth{
+		Username: "123", // Using a PAT this can be anything except an empty string
+		Password: pat,
+	})
 	if r == nil {
 		return "", errors.New("could not get repo")
 	}

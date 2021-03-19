@@ -5,6 +5,8 @@ import (
 	"regexp"
 	"sort"
 
+	"github.com/go-git/go-git/v5/plumbing/transport"
+
 	"github.com/go-git/go-git/v5/plumbing"
 	"github.com/go-git/go-git/v5/plumbing/object"
 	"github.com/go-git/go-git/v5/storage"
@@ -35,6 +37,7 @@ type GitRemoter interface {
 type GitRepo struct {
 	remote GitRemoter
 	storer storage.Storer
+	Auth   transport.AuthMethod
 }
 
 func (m *GitRepo) GetStorer() storage.Storer {
@@ -57,7 +60,7 @@ func (m *GitRepo) GetAllRemoteBranchesAndTags(repoURL string) []*plumbing.Refere
 	}
 
 	// We can then use every Remote functions to retrieve wanted information
-	refs, err := m.remote.List(&git.ListOptions{})
+	refs, err := m.remote.List(&git.ListOptions{Auth: m.Auth})
 	if err != nil {
 		log.Err(err).Msg("")
 	}
@@ -115,7 +118,7 @@ func (m *GitRepo) CreateBranchAndTag(sourceBranch *plumbing.Reference, targetBra
 			return err
 		}
 		refspec := fmt.Sprintf("refs/heads/%s:refs/heads/%s", branchName, branchName)
-		err = m.remote.Push(&git.PushOptions{RefSpecs: []config.RefSpec{config.RefSpec(refspec)}})
+		err = m.remote.Push(&git.PushOptions{RefSpecs: []config.RefSpec{config.RefSpec(refspec)}, Auth: m.Auth})
 		if err != nil {
 			log.Err(err).Msg("")
 			return err

@@ -20,14 +20,25 @@ Note: If no version `tag` or `branch` could be found, a new version based on `-n
 ## All flags
 
 ```
--c, --create-branch          Create a release version branch
--t, --create-tag             Create a release version tag
--f, --file string            Uses repos from file (one repo per line)
--n, --next-version string    Which number should be incremented by 1. Possible values: PATCH, MINOR, MAJOR (default "PATCH")
--r, --repos strings          Git Repo urls e.g. git@github.com:fhopfensperger/my-repo.git
--s, --source-branch string   Source reference branch (default: "main")
--b, --target-branch string   Which target branches to check for version (default: "release")
+-p, --pat string           Use a Git Personal Access Token instead of the default private certificate! You could also set a environment variable. "export PAT=123456789"
+-c, --branch               Create a release version branch
+-f, --file string          Use repos from file (one repo per line, line with a leading # will be ignored)
+-n, --nextversion string   Which number should be incremented by 1. Possible values: PATCH, MINOR, MAJOR (default "PATCH")
+-r, --repos strings        Git Repo urls e.g. git@github.com:fhopfensperger/my-repo.git
+-s, --source string        Source reference branch (default "main")
+-t, --tag                  Create a release version tag
+-b, --target string        Which target branches to check for version (default "release")
+
 ```
+Note: All flags can be set using environment variables, for example:
+```bash
+export REPOS=git@github.com:fhopfensperger/my-repo.git
+export NEXTVERSION=MAJOR
+export PATH=1234567890abcdef
+...
+```
+
+
 ---
 ## Demonstration
 (Updated 17.03.2021)

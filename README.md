@@ -11,7 +11,7 @@ This simple command line tool can be used to create a `release branch` and/ or a
 
 `-c` flag is used to create a new release branch
 
-Based on the version of the latest release `branch` or `tag`, the version number of the patch is incremented by one, if the `-s (--source-brach)` `default: main` branch is newer (based on the commit hash) than for the latest release.
+Based on the version of the latest release `branch` or `tag`, the version number of the patch is incremented by one, if the `-s (--source-brach)` `default: main` branch is newer (based on the commit hash) than the latest release.
 
 Set the `-n` `--next-version` flag to release a new `PATCH`, `MINOR` or `MAJOR` version, for example, `-n MINOR` will create a `release/v1.8.0` for `release/v1.7.4`
 

@@ -88,7 +88,7 @@ jobs:
           docker login -u=$QUAY_USER -p=$QUAY_TOKEN quay.io
           docker buildx build \
           --platform linux/arm/v7,linux/amd64,linux/arm64 \
-          --tag quay.io/fhopfensperger/git-releaserlatest \
+          --tag quay.io/fhopfensperger/git-releaser:latest \
           --tag quay.io/fhopfensperger/git-releaser:$RELEASE_VERSION_WITHOUT_V \
           -f Dockerfile \
           --build-arg BUILD_VERSION=$RELEASE_VERSION_WITHOUT_V \

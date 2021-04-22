@@ -156,20 +156,20 @@ func fallBackVersion(nextVersion int) string {
 	}
 }
 
-func (r *Repo) CreateNewRelease(branch, tag bool) error {
+func (r *Repo) CreateNewRelease(branch, tag, force bool) error {
 	if r.latestVersionReference == nil {
 		log.Info().Msg("No current version branches / tags found")
 		return r.remoteBranch.CreateBranchAndTag(r.sourceBranch, r.branchFilter, r.nextReleaseVersion, branch, tag)
 	}
 
 	if r.latestVersionReference.Name().IsTag() {
-		if r.latestVersionReference.Hash().String() == r.sourceBranch.Hash().String() {
+		if r.latestVersionReference.Hash().String() == r.sourceBranch.Hash().String() && !force {
 			log.Info().Msgf("Nothing to do, %s branch and latest tag version %s are equals, commit hash: %s", r.sourceBranch.Name().Short(), r.latestVersionReference.Name().Short(), r.sourceBranch.Hash())
 			return nil
 		}
 	}
 
-	if r.latestVersionReference.Hash().String() == r.sourceBranch.Hash().String() {
+	if r.latestVersionReference.Hash().String() == r.sourceBranch.Hash().String() && !force {
 		log.Info().Msgf("Nothing to do, %s and latest branch version %s are equals, commit hash: %s", r.sourceBranch.Name().Short(), r.latestVersionReference.Name().Short(), r.sourceBranch.Hash())
 		return nil
 	}

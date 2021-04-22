@@ -39,9 +39,10 @@ var createCmd = &cobra.Command{
 	Long:  `Creates a tag or version`,
 	Run: func(cmd *cobra.Command, args []string) {
 		pat = viper.GetString("pat")
+		force := viper.GetBool("force")
 
 		for _, r := range repos {
-			branchName, err := createNewReleaseVersion(r)
+			branchName, err := createNewReleaseVersion(r, force)
 			if err != nil {
 				log.Err(err).Msgf("For %s", r)
 			}
@@ -57,10 +58,12 @@ func init() {
 	flags := createCmd.Flags()
 	flags.StringP("pat", "p", "", `Use a Git Personal Access Token instead of the default private certificate! You could also set a environment variable. "export PAT=123456789" `)
 	_ = viper.BindPFlag("pat", flags.Lookup("pat"))
+	flags.Bool("force", false, `Creates a new release version, regardless of whether the last release is equal to the source branch or not`)
+	_ = viper.BindPFlag("force", flags.Lookup("force"))
 	rootCmd.AddCommand(createCmd)
 }
 
-func createNewReleaseVersion(repoUrl string) (string, error) {
+func createNewReleaseVersion(repoUrl string, force bool) (string, error) {
 	if strings.Contains(repoUrl, "https://") {
 		log.Info().Msgf(`Using PAT "-p" instead of ssh private certificate for repo %s`, repoUrl)
 	}
@@ -90,7 +93,7 @@ func createNewReleaseVersion(repoUrl string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	if err := r.CreateNewRelease(createBranch, createTag); err != nil {
+	if err := r.CreateNewRelease(createBranch, createTag, force); err != nil {
 		return "", err
 	}
 	return repoUrl, nil

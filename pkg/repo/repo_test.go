@@ -417,6 +417,8 @@ func TestRepo_CreateNewRelease(t *testing.T) {
 	remoteBranchMock.On("CreateBranchAndTag", main, "release", "v1.0.0", true, true).Return(nil)
 	remoteBranchMock.On("CreateBranchAndTag", main, "release", "v1.0.0", false, true).Return(nil)
 	remoteBranchMock.On("CreateBranchAndTag", main, "release", "v1.0.1", true, true).Return(nil)
+	remoteBranchMock.On("CreateBranchAndTag", main, "release", "v1.0.1", false, true).Return(nil)
+	remoteBranchMock.On("CreateBranchAndTag", tag_v1_0_0, "release", "v1.0.1", false, true).Return(nil)
 
 	// Create mock storage commit and associated tag...
 	stor := memory.NewStorage()
@@ -465,6 +467,7 @@ func TestRepo_CreateNewRelease(t *testing.T) {
 	type args struct {
 		branch bool
 		tag    bool
+		force  bool
 	}
 	tests := []struct {
 		name    string
@@ -603,6 +606,70 @@ func TestRepo_CreateNewRelease(t *testing.T) {
 			},
 			wantErr: false,
 		},
+		{
+			name: "create new branch",
+			fields: fields{
+				sourceBranch:           main,
+				latestVersionReference: tag_v1_0_0,
+				branchFilter:           "release",
+				nextReleaseVersion:     "v1.0.1",
+				remoteBranch:           remoteBranchMock,
+			},
+			args: args{
+				branch: true,
+				tag:    true,
+				force:  true,
+			},
+			wantErr: false,
+		},
+		{
+			name: "create new branch, because of force",
+			fields: fields{
+				sourceBranch:           main,
+				latestVersionReference: main,
+				branchFilter:           "release",
+				nextReleaseVersion:     "v1.0.1",
+				remoteBranch:           remoteBranchMock,
+			},
+			args: args{
+				branch: true,
+				tag:    true,
+				force:  true,
+			},
+			wantErr: false,
+		},
+		{
+			name: "dont create new tag",
+			fields: fields{
+				sourceBranch:           tag_v1_0_0,
+				latestVersionReference: tag_v1_0_0,
+				branchFilter:           "release",
+				nextReleaseVersion:     "v1.0.1",
+				remoteBranch:           remoteBranchMock,
+			},
+			args: args{
+				branch: false,
+				tag:    true,
+				force:  false,
+			},
+			wantErr: false,
+		},
+		{
+			name: "dont create new tag",
+			fields: fields{
+				sourceBranch:           tag_v1_0_0,
+				latestVersionReference: tag_v1_0_0,
+				branchFilter:           "release",
+				nextReleaseVersion:     "v1.0.1",
+				remoteBranch:           remoteBranchMock,
+			},
+			args: args{
+				branch: false,
+				tag:    true,
+				force:  true,
+			},
+			wantErr: false,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -617,7 +684,7 @@ func TestRepo_CreateNewRelease(t *testing.T) {
 				remoteBranch:           tt.fields.remoteBranch,
 				branchFilter:           tt.fields.branchFilter,
 			}
-			if err := r.CreateNewRelease(tt.args.branch, tt.args.tag); (err != nil) != tt.wantErr {
+			if err := r.CreateNewRelease(tt.args.branch, tt.args.tag, tt.args.force); (err != nil) != tt.wantErr {
 				t.Errorf("CreateNewRelease() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})

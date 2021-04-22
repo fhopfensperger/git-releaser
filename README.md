@@ -30,7 +30,7 @@ Note: If no version `tag` or `branch` could be found, a new version based on `-n
 -s, --source string        Source reference branch (default "main")
 -t, --tag                  Create a release version tag
 -b, --target string        Which target branches to check for version (default "release")
-
+ --force                   Creates a new release version, regardless of whether the last release is equal to the source branch or not
 ```
 Note: All flags can be set using environment variables, for example:
 ```bash

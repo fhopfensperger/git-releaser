@@ -133,13 +133,19 @@ $ git-releaser create -f repos1.txt -s main -n PATCH -c
 
 # Installation
 
-## Option 1 (script)
+## Homebrew
+
+```bash
+brew install fhopfensperger/tap/git-releaser
+```
+
+## Script
 
 ```bash
 curl https://raw.githubusercontent.com/fhopfensperger/git-releaser/main/get.sh | bash
 ```
 
-## Option 2 (manually)
+## Manually
 
 Go to [Releases](https://github.com/fhopfensperger/git-releaser/releases) download the latest release according to your processor architecture and operating system, and unarchive it.
 

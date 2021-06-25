@@ -18,6 +18,7 @@ package cmd
 
 import (
 	"errors"
+	"os"
 	"strings"
 
 	"github.com/go-git/go-git/v5/plumbing/transport/http"
@@ -40,6 +41,27 @@ var createCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		pat = viper.GetString("pat")
 		force := viper.GetBool("force")
+		nv := viper.GetString("nextversion")
+
+		switch nv {
+		case "PATCH":
+			log.Info().Msg("New PATCH version will be created")
+			nextVersion = repo.PATCH
+		case "MINOR":
+			log.Info().Msg("New MINOR version will be created")
+			nextVersion = repo.MINOR
+		case "MAJOR":
+			log.Info().Msg("New MAJOR version will be created")
+			nextVersion = repo.MAJOR
+		default:
+			log.Info().Msgf("New MINOR version will be created, as %s is unknown", nv)
+			nextVersion = repo.MINOR
+		}
+
+		if len(repos) == 0 && fileName == "" {
+			log.Err(nil).Msg("Either -f (file) or -r (repos) must be set")
+			os.Exit(1)
+		}
 
 		for _, r := range repos {
 			branchName, err := createNewReleaseVersion(r, force)

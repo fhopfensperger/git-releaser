@@ -20,7 +20,6 @@ import (
 	"bufio"
 	"os"
 
-	"github.com/fhopfensperger/git-releaser/pkg/repo"
 	"github.com/rs/zerolog/log"
 
 	"github.com/spf13/cobra"
@@ -101,29 +100,9 @@ func initConfig() {
 	createBranch = viper.GetBool("branch")
 	createTag = viper.GetBool("tag")
 
-	nv := viper.GetString("nextversion")
-
-	switch nv {
-	case "PATCH":
-		log.Info().Msg("New PATCH version will be created")
-		nextVersion = repo.PATCH
-	case "MINOR":
-		log.Info().Msg("New MINOR version will be created")
-		nextVersion = repo.MINOR
-	case "MAJOR":
-		log.Info().Msg("New MAJOR version will be created")
-		nextVersion = repo.MAJOR
-	default:
-		log.Info().Msgf("New MINOR version will be created, as %s is unknown", nv)
-		nextVersion = repo.MINOR
-	}
 
 	if fileName != "" {
 		repos = getReposFromFile(fileName)
-	}
-	if len(repos) == 0 && fileName == "" {
-		log.Err(nil).Msg("Either -f (file) or -r (repos) must be set")
-		os.Exit(1)
 	}
 }
 

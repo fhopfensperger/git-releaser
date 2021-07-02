@@ -2,6 +2,8 @@ package cmd
 
 import (
 	"testing"
+
+	"github.com/fhopfensperger/git-releaser/pkg/repo"
 )
 
 func Test_createNewReleaseVersion(t *testing.T) {
@@ -51,6 +53,45 @@ func Test_createNewReleaseVersion(t *testing.T) {
 			}
 			if got != tt.want {
 				t.Errorf("createNewReleaseVersion() got = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func Test_setNextVersion(t *testing.T) {
+	type args struct {
+		version string
+	}
+	tests := []struct {
+		name string
+		args args
+		want int
+	}{
+		{
+			name: "MAJOR",
+			args: args{version: "MAJOR"},
+			want: repo.MAJOR,
+		},
+		{
+			name: "MINOR",
+			args: args{version: "MINOR"},
+			want: repo.MINOR,
+		},
+		{
+			name: "PATCH",
+			args: args{version: "PATCH"},
+			want: repo.PATCH,
+		},
+		{
+			name: "DEFAULT",
+			args: args{version: "IdontKnow"},
+			want: repo.MINOR,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := setNextVersion(tt.args.version); got != tt.want {
+				t.Errorf("setNextVersion() = %v, want %v", got, tt.want)
 			}
 		})
 	}

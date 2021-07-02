@@ -7,8 +7,6 @@ import (
 	"os"
 	"testing"
 
-	"github.com/fhopfensperger/git-releaser/pkg/repo"
-
 	"github.com/stretchr/testify/assert"
 )
 
@@ -55,39 +53,6 @@ func Test_initConfig(t *testing.T) {
 	initConfig()
 
 	assert.Equal(t, []string{"repos123"}, repos)
-}
-func Test_initConfig_major(t *testing.T) {
-	os.Setenv("REPOS", "repos123")
-	os.Setenv("NEXTVERSION", "MAJOR")
-
-	initConfig()
-
-	assert.Equal(t, nextVersion, repo.MAJOR)
-}
-func Test_initConfig_minor(t *testing.T) {
-	os.Setenv("REPOS", "repos123")
-	os.Setenv("NEXTVERSION", "MINOR")
-
-	initConfig()
-
-	assert.Equal(t, nextVersion, repo.MINOR)
-}
-func Test_initConfig_patch(t *testing.T) {
-	os.Setenv("REPOS", "repos123")
-	os.Setenv("NEXTVERSION", "PATCH")
-
-	initConfig()
-
-	assert.Equal(t, nextVersion, repo.PATCH)
-}
-
-func Test_initConfig_default(t *testing.T) {
-	os.Setenv("REPOS", "repos123")
-	os.Setenv("NEXTVERSION", "DEFAULT")
-
-	initConfig()
-
-	assert.Equal(t, nextVersion, repo.MINOR)
 }
 
 func TestExecute(t *testing.T) {

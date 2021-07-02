@@ -18,6 +18,7 @@ package cmd
 
 import (
 	"errors"
+	"os"
 	"strings"
 
 	"github.com/go-git/go-git/v5/plumbing/transport/http"
@@ -31,6 +32,7 @@ import (
 )
 
 var pat string
+var nextVersion int
 
 // createCmd represents the branch command
 var createCmd = &cobra.Command{
@@ -40,6 +42,14 @@ var createCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		pat = viper.GetString("pat")
 		force := viper.GetBool("force")
+		nv := viper.GetString("nextversion")
+
+		nextVersion = setNextVersion(nv)
+
+		if len(repos) == 0 && fileName == "" {
+			log.Err(nil).Msg("Either -f (file) or -r (repos) must be set")
+			os.Exit(1)
+		}
 
 		for _, r := range repos {
 			branchName, err := createNewReleaseVersion(r, force)
@@ -63,12 +73,12 @@ func init() {
 	rootCmd.AddCommand(createCmd)
 }
 
-func createNewReleaseVersion(repoUrl string, force bool) (string, error) {
-	if strings.Contains(repoUrl, "https://") {
-		log.Info().Msgf(`Using PAT "-p" instead of ssh private certificate for repo %s`, repoUrl)
+func createNewReleaseVersion(repoURL string, force bool) (string, error) {
+	if strings.Contains(repoURL, "https://") {
+		log.Info().Msgf(`Using PAT "-p" instead of ssh private certificate for repo %s`, repoURL)
 	}
 
-	r := repo.New(repoUrl, &http.BasicAuth{
+	r := repo.New(repoURL, &http.BasicAuth{
 		Username: "123", // Using a PAT this can be anything except an empty string
 		Password: pat,
 	})
@@ -96,5 +106,22 @@ func createNewReleaseVersion(repoUrl string, force bool) (string, error) {
 	if err := r.CreateNewRelease(createBranch, createTag, force); err != nil {
 		return "", err
 	}
-	return repoUrl, nil
+	return repoURL, nil
+}
+
+func setNextVersion(version string) int {
+	switch version {
+	case "PATCH":
+		log.Info().Msg("New PATCH version will be created")
+		return repo.PATCH
+	case "MINOR":
+		log.Info().Msg("New MINOR version will be created")
+		return repo.MINOR
+	case "MAJOR":
+		log.Info().Msg("New MAJOR version will be created")
+		return repo.MAJOR
+	default:
+		log.Info().Msgf("New MINOR version will be created, as %s is unknown", version)
+		return repo.MINOR
+	}
 }

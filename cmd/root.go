@@ -33,7 +33,6 @@ var sourceBranch string
 var fileName string
 var createTag bool
 var createBranch bool
-var nextVersion int
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
@@ -99,7 +98,6 @@ func initConfig() {
 	targetBranch = viper.GetString("target")
 	createBranch = viper.GetBool("branch")
 	createTag = viper.GetBool("tag")
-
 
 	if fileName != "" {
 		repos = getReposFromFile(fileName)

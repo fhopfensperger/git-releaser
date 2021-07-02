@@ -32,6 +32,7 @@ import (
 )
 
 var pat string
+var nextVersion int
 
 // createCmd represents the branch command
 var createCmd = &cobra.Command{
@@ -43,20 +44,7 @@ var createCmd = &cobra.Command{
 		force := viper.GetBool("force")
 		nv := viper.GetString("nextversion")
 
-		switch nv {
-		case "PATCH":
-			log.Info().Msg("New PATCH version will be created")
-			nextVersion = repo.PATCH
-		case "MINOR":
-			log.Info().Msg("New MINOR version will be created")
-			nextVersion = repo.MINOR
-		case "MAJOR":
-			log.Info().Msg("New MAJOR version will be created")
-			nextVersion = repo.MAJOR
-		default:
-			log.Info().Msgf("New MINOR version will be created, as %s is unknown", nv)
-			nextVersion = repo.MINOR
-		}
+		nextVersion = setNextVersion(nv)
 
 		if len(repos) == 0 && fileName == "" {
 			log.Err(nil).Msg("Either -f (file) or -r (repos) must be set")
@@ -85,12 +73,12 @@ func init() {
 	rootCmd.AddCommand(createCmd)
 }
 
-func createNewReleaseVersion(repoUrl string, force bool) (string, error) {
-	if strings.Contains(repoUrl, "https://") {
-		log.Info().Msgf(`Using PAT "-p" instead of ssh private certificate for repo %s`, repoUrl)
+func createNewReleaseVersion(repoURL string, force bool) (string, error) {
+	if strings.Contains(repoURL, "https://") {
+		log.Info().Msgf(`Using PAT "-p" instead of ssh private certificate for repo %s`, repoURL)
 	}
 
-	r := repo.New(repoUrl, &http.BasicAuth{
+	r := repo.New(repoURL, &http.BasicAuth{
 		Username: "123", // Using a PAT this can be anything except an empty string
 		Password: pat,
 	})
@@ -118,5 +106,22 @@ func createNewReleaseVersion(repoUrl string, force bool) (string, error) {
 	if err := r.CreateNewRelease(createBranch, createTag, force); err != nil {
 		return "", err
 	}
-	return repoUrl, nil
+	return repoURL, nil
+}
+
+func setNextVersion(version string) int {
+	switch version {
+	case "PATCH":
+		log.Info().Msg("New PATCH version will be created")
+		return repo.PATCH
+	case "MINOR":
+		log.Info().Msg("New MINOR version will be created")
+		return repo.MINOR
+	case "MAJOR":
+		log.Info().Msg("New MAJOR version will be created")
+		return repo.MAJOR
+	default:
+		log.Info().Msgf("New MINOR version will be created, as %s is unknown", version)
+		return repo.MINOR
+	}
 }

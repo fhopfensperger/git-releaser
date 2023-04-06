@@ -3,7 +3,7 @@
 [![Go Report Card](https://goreportcard.com/badge/github.com/fhopfensperger/git-releaser)](https://goreportcard.com/report/github.com/fhopfensperger/git-releaser)
 [![Coverage Status](https://coveralls.io/repos/github/fhopfensperger/git-releaser/badge.svg?branch=main)](https://coveralls.io/github/fhopfensperger/git-releaser?branch=main)
 [![Release](https://img.shields.io/github/release/fhopfensperger/git-releaser.svg?style=flat-square)](https://github.com//fhopfensperger/git-releaser/releases/latest)
-[![Docker Repository on Quay](https://img.shields.io/badge/Quay-repository-sucess "Docker Repository on Quay")](https://quay.io/repository/fhopfensperger/git-releaser)
+[![Docker Repository on Quay](https://img.shields.io/badge/Quay-repository-sucess "Docker Repository on Quay")](https://ghcr.io/repository/fhopfensperger/git-releaser)
 
 
 This simple command line tool can be used to create a `release branch` and/ or a `tag` with [semantic versioning](https://semver.org) e.g. branch: `release/v1.7.5` and/or tag: `v1.7.5`.
@@ -160,8 +160,8 @@ chmod +x git-releaser
 Besides installing the binary on the local computer, you have the option to run the program as a container
 ```bash
 # Using a single repo
-docker run -it --rm quay.io/fhopfensperger/git-releaser create -r https://github.com/fhopfensperger/my-repo.git -s main -n PATCH -t -c -p 123
+docker run -it --rm ghcr.io/fhopfensperger/git-releaser create -r https://github.com/fhopfensperger/my-repo.git -s main -n PATCH -t -c -p 123
 
 # Using a file to define multiple repos
-docker run -it --rm -v $(pwd)/repos_http.txt:/app/repos_http.txt quay.io/fhopfensperger/git-releaser create -f repos_http.txt -s main -n PATCH -t -c -p 123
+docker run -it --rm -v $(pwd)/repos_http.txt:/app/repos_http.txt ghcr.io/fhopfensperger/git-releaser create -f repos_http.txt -s main -n PATCH -t -c -p 123
 ```

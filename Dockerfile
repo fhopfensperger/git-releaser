@@ -1,10 +1,11 @@
-FROM golang:1.21.6 as goBuilder
+FROM golang:1.22 as goBuilder
 
 USER root
 WORKDIR /work
 COPY . .
 ARG BUILD_VERSION="0.0.0"
 RUN CGO_ENABLED=0 go build -a -ldflags "-X main.version=$BUILD_VERSION" -o git-releaser .
+
 
 FROM alpine:3.19
 

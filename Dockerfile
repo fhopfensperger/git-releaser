@@ -7,7 +7,7 @@ ARG BUILD_VERSION="0.0.0"
 RUN CGO_ENABLED=0 go build -a -ldflags "-X main.version=$BUILD_VERSION" -o git-releaser .
 
 
-FROM alpine:3.19
+FROM alpine:3.20
 
 LABEL maintainer="Florian Hopfensperger <f.hopfensperger@gmail.com>"
 

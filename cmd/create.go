@@ -74,14 +74,17 @@ func init() {
 }
 
 func createNewReleaseVersion(repoURL string, force bool) (string, error) {
+	var r *repo.Repo
 	if strings.Contains(repoURL, "https://") {
 		log.Info().Msgf(`Using PAT "-p" instead of ssh private certificate for repo %s`, repoURL)
+		r = repo.New(repoURL, &http.BasicAuth{
+			Username: "123", // Using a PAT this can be anything except an empty string
+			Password: pat,
+		})
+	} else {
+		r = repo.New(repoURL, nil)
 	}
 
-	r := repo.New(repoURL, &http.BasicAuth{
-		Username: "123", // Using a PAT this can be anything except an empty string
-		Password: pat,
-	})
 	if r == nil {
 		return "", errors.New("could not get repo")
 	}
